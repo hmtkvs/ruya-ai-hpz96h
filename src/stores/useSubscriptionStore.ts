@@ -12,8 +12,8 @@ interface SubscriptionState {
 export const useSubscriptionStore = create<SubscriptionState>()(
   persist(
     (set) => ({
-      freeInterpretationsLeft: 1,
-      isPremium: false,
+      freeInterpretationsLeft: 10,
+      isPremium: true,
       setFreeInterpretationsLeft: (count) => set({ freeInterpretationsLeft: count }),
       decrementFreeInterpretations: () => 
         set((state) => ({ freeInterpretationsLeft: Math.max(0, state.freeInterpretationsLeft - 1) })),
