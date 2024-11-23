@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Moon, Star, LogIn } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { interpretDreamWithAI } from '../utils/deepinfra'
@@ -11,15 +11,27 @@ import AIProcessingAnimation from '../components/AIProcessingAnimation'
 import InteractiveStars from '../components/InteractiveStars'
 import LoginForm from '../components/LoginForm'
 import { useSubscriptionStore } from '../stores/useSubscriptionStore'
+import PremiumModal from '../components/PremiumModal'
 
 export default function HomePage() {
-  const { user, signInWithGoogle } = useAuth()
+  const { user, signInWithGoogle, isAdmin } = useAuth()
   const [dreamText, setDreamText] = useState('')
   const [interpretation, setInterpretation] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPremiumModal, setShowPremiumModal] = useState(false)
-  const { freeInterpretationsLeft, decrementFreeInterpretations, isPremium } = useSubscriptionStore()
+  const { 
+    freeInterpretationsLeft, 
+    decrementFreeInterpretations, 
+    isPremium,
+    setFreeInterpretationsLeft 
+  } = useSubscriptionStore()
+
+  useEffect(() => {
+    if (isAdmin) {
+      setFreeInterpretationsLeft(999)
+    }
+  }, [isAdmin, setFreeInterpretationsLeft])
 
   const handleInterpretDream = async () => {
     if (!dreamText.trim()) {
@@ -27,7 +39,7 @@ export default function HomePage() {
       return
     }
 
-    if (!isPremium && freeInterpretationsLeft <= 0) {
+    if (!isAdmin && !isPremium && freeInterpretationsLeft <= 0) {
       setShowPremiumModal(true)
       return
     }
@@ -49,7 +61,7 @@ export default function HomePage() {
         })
       }
 
-      if (!isPremium) {
+      if (!isAdmin && !isPremium) {
         decrementFreeInterpretations()
       }
     } catch (err) {
@@ -63,38 +75,38 @@ export default function HomePage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-[80vh] flex-col items-center justify-center text-center animate-fade-in relative">
+      <div className="relative min-h-[80vh] flex flex-col items-center justify-center text-center">
         <InteractiveStars />
         
-        <div className="relative w-16 h-16 mb-6">
-          <Moon className="h-16 w-16 text-red-500 animate-float" />
-          <Star className="h-8 w-8 text-white absolute -top-2 -right-2 animate-pulse" />
-          {Array.from({ length: 5 }).map((_, i) => {
-            const angle = (i * 72) * (Math.PI / 180)
-            const distance = 32
-            return (
+        <div className="relative mb-8 animate-float">
+          <div className="relative w-24 h-24 mx-auto mb-4">
+            <Moon className="h-24 w-24 text-red-500" />
+            <Star 
+              className="h-10 w-10 text-white absolute -top-2 -right-2 animate-pulse" 
+              style={{ animationDelay: '0.5s' }}
+            />
+            {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
                 className="absolute bg-white rounded-full animate-twinkle"
                 style={{
                   width: 2 + Math.random() * 2,
                   height: 2 + Math.random() * 2,
-                  left: `${50 + Math.cos(angle) * distance}%`,
-                  top: `${50 + Math.sin(angle) * distance}%`,
+                  left: `${50 + Math.cos((i * 72) * Math.PI / 180) * 25}%`,
+                  top: `${50 + Math.sin((i * 72) * Math.PI / 180) * 25}%`,
                   animationDelay: `${i * 0.2}s`,
                   opacity: 0.6 + Math.random() * 0.4
                 }}
               />
-            )
-          })}
+            ))}
+          </div>
+          <h1 className="text-4xl font-bold text-white mb-4">rūyaAI'ya Hoş Geldiniz</h1>
+          <p className="text-xl text-purple-200 mb-8 max-w-md mx-auto">
+            Yapay zeka destekli rüya yorumlama ile bilinçaltınızın gizemlerini keşfedin
+          </p>
         </div>
 
-        <h1 className="text-4xl font-bold text-white mb-4">rūyaAI'ya Hoş Geldiniz</h1>
-        <p className="text-xl text-purple-200 mb-8 max-w-md">
-          Yapay zeka destekli rüya yorumlama ile rüyalarınızın gizemini çözün
-        </p>
-
-        <div className="space-y-6 w-full max-w-sm">
+        <div className="relative z-10 w-full max-w-md space-y-6 px-4">
           <LoginForm />
           
           <div className="relative">
@@ -102,15 +114,16 @@ export default function HomePage() {
               <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[#0f0a1f] text-purple-300">veya</span>
+              <span className="bg-[#1a1333] px-2 text-purple-300">veya</span>
             </div>
           </div>
 
           <button
             onClick={signInWithGoogle}
-            className="w-full flex items-center justify-center space-x-2 rounded-lg bg-white/10 
-                     px-6 py-3 text-white hover:bg-white/20 transition-all duration-300
-                     shadow-neon hover:shadow-neon-hover transform hover:scale-105"
+            className="w-full flex items-center justify-center space-x-2 rounded-lg 
+                     bg-white/10 px-6 py-3 text-white hover:bg-white/20 
+                     transition-all duration-300 shadow-neon hover:shadow-neon-hover 
+                     transform hover:scale-105"
           >
             <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
             <span>Google ile Devam Et</span>
@@ -121,8 +134,8 @@ export default function HomePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <div className="rounded-xl bg-white/10 p-8 backdrop-blur-lg animate-fade-in">
+    <div className="mx-auto max-w-2xl px-4">
+      <div className="rounded-xl bg-white/10 p-6 md:p-8 backdrop-blur-lg animate-fade-in">
         <div className="mb-6 text-center">
           <h1 className="text-3xl font-bold text-white mb-2">Rüyanızı Anlatın</h1>
           <p className="text-purple-200">
@@ -137,17 +150,7 @@ export default function HomePage() {
             isLoading={isLoading}
           />
 
-          {error && (
-            <div className="space-y-4">
-              <ErrorDisplay error={error} />
-              <button
-                onClick={() => setError('')}
-                className="text-sm text-purple-300 hover:text-purple-200 underline"
-              >
-                Tekrar deneyin
-              </button>
-            </div>
-          )}
+          {error && <ErrorDisplay error={error} />}
 
           {isLoading && <AIProcessingAnimation />}
 
@@ -155,22 +158,27 @@ export default function HomePage() {
             <InterpretationDisplay interpretation={interpretation} />
           )}
 
-          <LoadingButton
-            isLoading={isLoading}
-            disabled={isLoading || !dreamText.trim()}
-            onClick={handleInterpretDream}
-            loadingText="Yorumlanıyor..."
-          >
-            Rüyayı Yorumla
-          </LoadingButton>
+          {!isLoading && (
+            <LoadingButton
+              isLoading={isLoading}
+              disabled={isLoading || !dreamText.trim()}
+              onClick={handleInterpretDream}
+            >
+              Rüyayı Yorumla
+            </LoadingButton>
+          )}
 
-          {!isPremium && (
-            <p className="text-sm text-center text-purple-300">
+          {!isPremium && !isAdmin && (
+            <p className="text-center text-sm text-purple-300">
               {freeInterpretationsLeft} ücretsiz yorum hakkınız kaldı
             </p>
           )}
         </div>
       </div>
+
+      {showPremiumModal && (
+        <PremiumModal isOpen={showPremiumModal} onClose={() => setShowPremiumModal(false)} />
+      )}
     </div>
   )
 }

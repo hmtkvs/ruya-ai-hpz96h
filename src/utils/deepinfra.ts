@@ -19,7 +19,16 @@ export const interpretDreamWithAI = async (dreamText: string) => {
         messages: [
           {
             role: 'system',
-            content: 'Sen bir rüya yorumcususun ve psikoloji ve sembolizm konusunda uzmansın. Psikolojik sembolizmi, kişisel gelişim perspektiflerini ve potansiyel anlamları göz önünde bulundurarak düşünceli yorumlar sağla. Yorumları özlü ama derinlikli tut.'
+            content: `Sen bir rüya yorumcususun ve psikoloji ve sembolizm konusunda uzmansın. 
+            Yorumları aşağıdaki formatta yap:
+
+            1. Önce genel bir giriş paragrafı yaz.
+            2. Sonra rüyadaki her önemli sembol için ayrı bir başlık oluştur.
+            3. Her başlığı ** işaretleri arasına al. Örnek: **Sembol Adı**
+            4. Her başlığın altına o sembolün detaylı yorumunu ekle.
+            5. Son olarak genel bir özet ve tavsiye paragrafı ekle.
+
+            Yorumları özlü ama derinlikli tut.`
           },
           {
             role: 'user',
@@ -27,7 +36,7 @@ export const interpretDreamWithAI = async (dreamText: string) => {
           }
         ],
         temperature: 0.7,
-        max_tokens: 500,
+        max_tokens: 800,
         top_p: 0.9
       }),
     })

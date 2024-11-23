@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { setupLemonSqueezy, createCheckout } from '@lemonsqueezy/lemonsqueezy.js'
+import { LemonSqueezy } from '@lemonsqueezy/lemonsqueezy.js'
 
 const STORE_ID = import.meta.env.VITE_LEMON_SQUEEZY_STORE_ID
 
@@ -12,7 +12,7 @@ interface CheckoutOptions {
 export function useLemonSqueezy() {
   const checkout = useCallback(async ({ productId, variantId, customData }: CheckoutOptions) => {
     try {
-      setupLemonSqueezy({
+      const lemonSqueezy = new LemonSqueezy({
         storeId: STORE_ID,
         apiKey: import.meta.env.VITE_LEMON_SQUEEZY_API_KEY
       })
@@ -28,7 +28,7 @@ export function useLemonSqueezy() {
         }
       }
 
-      const { url } = await createCheckout(checkoutOptions)
+      const { url } = await lemonSqueezy.createCheckout(checkoutOptions)
       window.location.href = url
     } catch (error) {
       console.error('Lemon Squeezy checkout error:', error)
